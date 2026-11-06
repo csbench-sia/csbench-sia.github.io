@@ -107,9 +107,7 @@
                 <div class="card" style="margin-top: 1.5rem;">
                     <h3>Domain &amp; Language Distribution</h3>
                     <p data-i18n="details.domainIntro" data-i18n-html="true">
-                        CSBench spans <strong>4 high-level topics</strong> and <strong>19 sub-topics</strong>, ensuring
-                        systematic domain representation. It covers Python (41%), C/C++ (39%), and other mainstream
-                        languages including Java, JavaScript, Go, Rust, and Assembly.
+                        CSBench spans <strong>4 high-level topics</strong> and <strong>19 sub-topics</strong> across <strong>9 primary programming languages</strong>: Python (41%), C++ (21%), C (18%), JavaScript (8%), Java (5%), Go (3%), Lisp (2%), Julia (1%), and Rust (1%).
                     </p>
                     <div class="distribution-chart-grid">
                         <div class="distribution-chart-panel">
@@ -264,13 +262,13 @@
                             <tbody>
                                 <tr>
                                     <td>Task Specification</td>
-                                    <td>Length (words)</td>
+                                    <td>Length</td>
                                     <td>195.1</td>
                                     <td>4,477</td>
                                     <td>550.6</td>
                                     <td>—</td>
-                                    <td class="highlight-cell">676.2</td>
-                                    <td class="highlight-cell">5,693</td>
+                                    <td>676.2</td>
+                                    <td>5,693</td>
                                 </tr>
                                 <tr>
                                     <td rowspan="2">Initial Code</td>
@@ -279,8 +277,8 @@
                                     <td>5,890</td>
                                     <td>3,817.5</td>
                                     <td>—</td>
-                                    <td>77.8</td>
-                                    <td>1,168</td>
+                                    <td>40.6</td>
+                                    <td>604</td>
                                 </tr>
                                 <tr>
                                     <td># Lines (non-test)</td>
@@ -288,8 +286,8 @@
                                     <td>886K</td>
                                     <td>178.6K</td>
                                     <td>—</td>
-                                    <td>185K</td>
-                                    <td>657K</td>
+                                    <td>6.3K</td>
+                                    <td>149.8K</td>
                                 </tr>
                                 <tr>
                                     <td rowspan="3">Gold Patch</td>
@@ -335,12 +333,13 @@
                                     <td>9,459</td>
                                     <td>2,241.2</td>
                                     <td>—</td>
-                                    <td>17.0</td>
+                                    <td>17.1</td>
                                     <td>68</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                    <p class="stats-counting-note" data-i18n="details.statsCounting">CSBench source size counts nonblank lines, including comments, in source files, headers, grammar files, build scripts, and notebook code cells. Vendored source is included; tests, data assets, binaries, and build artifacts are excluded. SWE-bench and Multi-SWE-Bench figures come from their original publications; counting conventions may differ. Specification length is measured in words for SWE-bench and CSBench and in tokens for Multi-SWE-Bench.</p>
                 </div>
             </section>
             <!-- ===== Main Results ===== -->
