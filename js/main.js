@@ -812,7 +812,8 @@ function escapeHtml(value) {
    ======================================== */
 const CSBENCH_HF_ROWS_URL = 'https://datasets-server.huggingface.co/rows?dataset=BytedTsinghua-SIA%2FCSBench&config=default&split=test&offset=0&length=100';
 const CSBENCH_LOCAL_ROWS_URL = 'data/csbench-dataset-rows-v2.json';
-const CSBENCH_TASKS_BASE_URL = 'https://anonymous.4open.science/r/CSBench/tasks';
+const CSBENCH_SOURCE_BASE_URL = 'https://github.com/BytedTsinghua-SIA/CSBench';
+const CSBENCH_TASKS_BASE_URL = `${CSBENCH_SOURCE_BASE_URL}/tree/main/tasks`;
 
 const CSBENCH_ANNOTATION_FIELDS = [
     ['task_desc', 'case.field.taskDesc'],
@@ -1308,9 +1309,12 @@ function localizeCategoryValue(value) {
 }
 
 function getTaskSourceUrl(taskId, path) {
-    const normalizedTaskId = normalizeTaskId(taskId);
-    const normalizedPath = path ? String(path).replace(/^\/+/, '') : normalizedTaskId;
-    return `${CSBENCH_TASKS_BASE_URL}/${encodeURI(normalizedPath || normalizedTaskId)}`;
+    const taskRoot = normalizeTaskId(taskId).toLowerCase();
+    const parts = path ? String(path).replace(/^\/+/, '').split('/') : [taskRoot];
+    parts[0] = parts[0].toLowerCase();
+    const encodedPath = parts.map(part => encodeURIComponent(part)).join('/');
+    const view = parts.length > 1 ? 'blob' : 'tree';
+    return `${CSBENCH_SOURCE_BASE_URL}/${view}/main/tasks/${encodedPath}`;
 }
 
 function uniqueSorted(values) {

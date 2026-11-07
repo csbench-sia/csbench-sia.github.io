@@ -16,8 +16,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TASKS_ROOT = REPO_ROOT.parent / "CSBench" / "tasks"
 OUTPUT_PATH = REPO_ROOT / "js" / "csbench-task-trees.js"
-REMOTE_API_BASE = "https://anonymous.4open.science/api/repo/CSBench"
-REMOTE_TASKS_URL = "https://anonymous.4open.science/r/CSBench/tasks"
+REMOTE_API_BASE = "https://api.github.com/repos/BytedTsinghua-SIA/CSBench"
+REMOTE_TASKS_URL = "https://github.com/BytedTsinghua-SIA/CSBench/tree/main/tasks"
 
 
 def sort_key(path: Path) -> tuple[int, str]:
@@ -144,46 +144,40 @@ def build_remote_tree(task_id: str, entries: list[dict]) -> dict:
     }
 
     for entry in entries:
-        full_path = entry_full_path(entry)
+        full_path = entry["path"]
         if full_path == remote_root:
             continue
         if not full_path.startswith(remote_root + "/"):
             continue
 
         relative_path = full_path[len(remote_root) + 1 :]
-        insert_remote_entry(root, relative_path, "size" in entry)
+        insert_remote_entry(root, relative_path, entry["type"] == "blob")
 
     return sort_remote_tree(root)
 
 
 def build_from_remote() -> dict:
-    tasks_url = f"{REMOTE_API_BASE}/files/?path=tasks"
-    task_entries = fetch_json(tasks_url)
-    task_ids = sorted(
-        entry["name"].lower()
-        for entry in task_entries
-        if isinstance(entry, dict) and str(entry.get("name", "")).lower().startswith("cs")
-    )
-
+    payload = fetch_json(f"{REMOTE_API_BASE}/git/trees/main?recursive=1")
+    if not isinstance(payload, dict) or payload.get("truncated"):
+        raise RuntimeError("Expected a complete GitHub repository tree")
+    entries = payload["tree"]
+    rows = json.loads((REPO_ROOT / "data" / "csbench-dataset-rows-v2.json").read_text())
+    task_ids = sorted({row["id"].lower() for row in rows})
+    available = {entry["path"] for entry in entries if entry["type"] == "tree"}
+    missing = [task_id for task_id in task_ids if f"tasks/{task_id}" not in available]
+    if missing:
+        raise RuntimeError(f"Public task directories missing: {missing}")
     task_trees = {}
-    for index, task_id in enumerate(task_ids, start=1):
-        query = urllib.parse.quote(task_id)
-        entries = fetch_json(f"{REMOTE_API_BASE}/files/search?q={query}")
-        if not isinstance(entries, list):
-            raise RuntimeError(f"Unexpected search response for {task_id}")
-
+    for task_id in task_ids:
         tree = build_remote_tree(task_id, entries)
         files, folders = count_stats(tree)
         task_trees[task_id.upper()] = {
-            "id": task_id.upper(),
-            "files": files,
-            "folders": folders,
-            "tree": tree,
+            "id": task_id.upper(), "files": files, "folders": folders, "tree": tree,
         }
-        print(f"[{index:03d}/{len(task_ids):03d}] {task_id.upper()}: {files} files, {folders} folders")
 
     return {
         "generatedFrom": REMOTE_TASKS_URL,
+        "sourceCommit": payload["sha"],
         "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "taskCount": len(task_trees),
         "tasks": task_trees,
@@ -231,7 +225,7 @@ def main() -> None:
         "--source",
         choices=("remote", "local"),
         default="remote",
-        help="Build from the anonymous remote API or from a local sibling CSBench checkout.",
+        help="Build from the public GitHub API or from a local sibling CSBench checkout.",
     )
     args = parser.parse_args()
 
